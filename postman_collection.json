@@ -1,0 +1,294 @@
+{
+  "info": {
+    "name": "Bali Backend GraphQL API",
+    "description": "Complete GraphQL API collection for Bali Backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation Register($username: String!, $email: String!, $password: String!) {\n  register(username: $username, email: $email, password: $password) {\n    id\n    username\n    email\n    createdAt\n  }\n}",
+                "variables": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+              }
+            },
+            "url": {
+              "raw": "{{graphql_endpoint}}",
+              "host": ["{{graphql_endpoint}}"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.login && jsonData.data.login.token) {",
+                  "        pm.environment.set(\"jwt_token\", jsonData.data.login.token);",
+                  "        console.log(\"Token saved:\", jsonData.data.login.token);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation Login($username: String!, $password: String!) {\n  login(username: $username, password: $password) {\n    token\n    user {\n      id\n      username\n      email\n      phoneNumber\n    }\n    isProfileComplete\n  }\n}",
+                "variables": "{\n  \"username\": \"testuser\",\n  \"password\": \"password123\"\n}"
+              }
+            },
+            "url": {
+              "raw": "{{graphql_endpoint}}",
+              "host": ["{{graphql_endpoint}}"]
+            }
+          }
+        },
+        {
+          "name": "Login with Phone",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation LoginWithPhone($firebaseToken: String!) {\n  loginWithPhone(firebaseToken: $firebaseToken) {\n    token\n    user {\n      id\n      phoneNumber\n    }\n    isProfileComplete\n  }\n}",
+                "variables": "{\n  \"firebaseToken\": \"YOUR_FIREBASE_ID_TOKEN\"\n}"
+              }
+            },
+            "url": {
+              "raw": "{{graphql_endpoint}}",
+              "host": ["{{graphql_endpoint}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Profile",
+      "item": [
+        {
+          "name": "Get Me",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  me {\n    id\n    username\n    email\n    phoneNumber\n    address\n    profileImageUrl\n    role\n    isProfileComplete\n    createdAt\n    lastLogin\n    villageGroup {\n      id\n      name\n    }\n  }\n}"
+              }
+            },
+            "url": {
+              "raw": "{{graphql_endpoint}}",
+              "host": ["{{graphql_endpoint}}"]
+            }
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query GetUser($id: ID!) {\n  user(id: $id) {\n    id\n    username\n    email\n    phoneNumber\n    address\n    profileImageUrl\n    role\n    createdAt\n    villageGroup {\n      id\n      name\n    }\n  }\n}",
+                "variables": "{\n  \"id\": 1\n}"
+              }
+            },
+            "url": {
+              "raw": "{{graphql_endpoint}}",
+              "host": ["{{graphql_endpoint}}"]
+            }
+          }
+        },
+        {
+          "name": "Save Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation SaveProfile($username: String, $email: String, $address: String, $villageId: ID, $profileImageUrl: String) {\n  saveProfile(username: $username, email: $email, address: $address, villageId: $villageId, profileImageUrl: $profileImageUrl) {\n    id\n    username\n    email\n    address\n    profileImageUrl\n    villageGroup {\n      id\n      name\n    }\n    isProfileComplete\n  }\n}",
+                "variables": "{\n  \"username\": \"john_doe\",\n  \"email\": \"john@example.com\",\n  \"address\": \"123 Main Street\",\n  \"villageId\": 1,\n  \"profileImageUrl\": \"https://example.com/image.jpg\"\n}"
+              }
+            },
+            "url": {
+              "raw": "{{graphql_endpoint}}",
+              "host": ["{{graphql_endpoint}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Posts",
+      "item": [
+        {
+          "name": "Get Feed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query GetFeed($page: Int, $size: Int) {\n  feed(page: $page, size: $size) {\n    id\n    content\n    imageUrl\n    likesCount\n    createdAt\n    author {\n      id\n      username\n    }\n    villageGroup {\n      id\n      name\n    }\n    comments {\n      id\n      content\n      createdAt\n      author {\n        id\n        username\n      }\n    }\n  }\n}",
+                "variables": "{\n  \"page\": 0,\n  \"size\": 10\n}"
+              }
+            },
+            "url": {
+              "raw": "{{graphql_endpoint}}",
+              "host": ["{{graphql_endpoint}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Post by ID",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query GetPost($id: ID!) {\n  post(id: $id) {\n    id\n    content\n    imageUrl\n    likesCount\n    createdAt\n    author {\n      id\n      username\n      email\n    }\n    villageGroup {\n      id\n      name\n      description\n    }\n    comments {\n      id\n      content\n      createdAt\n      author {\n        id\n        username\n      }\n    }\n  }\n}",
+                "variables": "{\n  \"id\": 1\n}"
+              }
+            },
+            "url": {
+              "raw": "{{graphql_endpoint}}",
+              "host": ["{{graphql_endpoint}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Village Groups",
+      "item": [
+        {
+          "name": "Get All Village Groups",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  villageGroups {\n    id\n    name\n    description\n    members {\n      id\n      username\n    }\n  }\n}"
+              }
+            },
+            "url": {
+              "raw": "{{graphql_endpoint}}",
+              "host": ["{{graphql_endpoint}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Village Group by ID",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query GetVillageGroup($id: ID!) {\n  villageGroup(id: $id) {\n    id\n    name\n    description\n    members {\n      id\n      username\n      email\n      phoneNumber\n    }\n  }\n}",
+                "variables": "{\n  \"id\": 1\n}"
+              }
+            },
+            "url": {
+              "raw": "{{graphql_endpoint}}",
+              "host": ["{{graphql_endpoint}}"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "graphql_endpoint",
+      "value": "http://192.168.68.130:8080/graphql",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+type Query {
+    # Post Feed
+    feed(page: Int, size: Int): [Post]
+    post(id: ID!): Post
+
+    # User Profile
+    me: User
+    user(id: ID!): User
+
+    # Village Groups
+    villageGroups: [VillageGroup]
+    villageGroup(id: ID!): VillageGroup
+}
+
+type Mutation {
+    # Phone Authentication
+    # Client sends Firebase ID token after OTP verification
+    loginWithPhone(firebaseToken: String!): AuthResponse
+
+    # Legacy Authentication (username/password)
+    login(username: String!, password: String!): AuthResponse
+    register(username: String!, email: String!, password: String!): User
+
+    # Post Actions
+    createPost(
+        content: String!, 
+        imageUrl: String, 
+        villageId: ID,
+        visibility: String,
+        postType: String,
+        groupId: ID,
+        parentPostId: ID,
+        sharedPostId: ID
+    ): Post
+    updatePost(id: ID!, content: String!): Post
+    deletePost(id: ID!): Boolean
+
+    # Engagement
+    likePost(postId: ID!): Post
+    addComment(postId: ID!, content: String!): Comment
+
+    # Save/Update Profile - villageId is optional for now
+    saveProfile(
+        username: String
+        email: String
+        address: String
+        villageId: ID
+        profileImageUrl: String
+    ): User
+
+    # Backward compatibility alias used by older Android clients
+    updateProfile(
+        username: String
+        email: String
+        address: String
+        villageId: ID
+        profileImageUrl: String
+    ): User
+}
+
+type AuthResponse {
+    token: String!
+    user: User!
+    isProfileComplete: Boolean!
+}
+
+type User {
+    id: ID!
+    phoneNumber: String
+    username: String
+    email: String
+    address: String
+    role: Role!
+    villageGroup: VillageGroup
+    isProfileComplete: Boolean!
+    createdAt: String
+    lastLogin: String
+    profileImageUrl: String
+}
+
+enum Role {
+    USER
+    ADMIN
+}
+
+type Post {
+    id: ID!
+    content: String!
+    imageUrl: String
+    author: User!
+    villageGroup: VillageGroup
+    likesCount: Int!
+    comments: [Comment]
+    createdAt: String!
+}
+
+type Comment {
+    id: ID!
+    content: String!
+    author: User!
+    createdAt: String!
+}
+
+type VillageGroup {
+    id: ID!
+    name: String!
+    description: String
+    members: [User]
+}
